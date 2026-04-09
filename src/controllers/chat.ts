@@ -110,7 +110,6 @@ export const sendMessage = async (req: Request, res: Response) => {
     }
 
     const analysis = await generateJSONContent(
-      "gemini-2.0-flash",
       `Analyze this therapy message and provide insights. 
       Message: ${message}
       Context: ${JSON.stringify({
@@ -154,7 +153,6 @@ export const sendMessage = async (req: Request, res: Response) => {
     5. Considers safety and well-being`;
 
     const response = await generateTextContent(
-      "gemini-2.0-flash",
       responsePrompt,
       "I'm here for you, though I'm experiencing high demand right now. Please try again in a moment."
     );

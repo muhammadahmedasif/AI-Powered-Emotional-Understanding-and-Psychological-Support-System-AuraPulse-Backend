@@ -48,7 +48,6 @@ export const processChatMessage = inngest.createFunction(
         }`;
 
         return await generateJSONContent(
-          "gemini-2.0-flash",
           prompt,
           {
             emotionalState: "neutral",
@@ -86,7 +85,7 @@ export const processChatMessage = inngest.createFunction(
 
       const response = await step.run("generate-response", async () => {
         try {
-          const model = getModel("gemini-2.0-flash");
+          const model = getModel();
 
           const prompt = `${systemPrompt}
           
@@ -162,7 +161,6 @@ export const analyzeTherapySession = inngest.createFunction(
         5. Progress indicators`;
 
         return await generateJSONContent(
-          "gemini-2.0-flash",
           prompt,
           {
             themes: [],
@@ -233,7 +231,6 @@ export const generateActivityRecommendations = inngest.createFunction(
         5. Estimated duration`;
 
           return await generateJSONContent(
-            "gemini-2.0-flash",
             prompt,
             {
               recommendations: [],

@@ -1,8 +1,8 @@
 import { GoogleGenerativeAI, GenerationConfig } from "@google/generative-ai";
 import { logger } from "./logger";
 
-// Standard model to use across the project
-const DEFAULT_MODEL = "gemini-2.0-flash";
+// Standard model to use across the project - Confirmed working for 2026 free tier
+export const DEFAULT_MODEL = "gemini-2.5-flash";
 
 // Common generation config for JSON response
 export const jsonGenerationConfig: GenerationConfig = {
@@ -14,18 +14,25 @@ export const jsonGenerationConfig: GenerationConfig = {
 };
 
 // -----------------------------------------------------------------------
-// API Key Rotation Pool
-// Reads all available keys at call-time (after dotenv has loaded).
-// Add GEMINI_API_KEY_2, GEMINI_API_KEY_3, etc. to your .env to enable.
+// API Key Rotation Pool & Smart Backoff
 // -----------------------------------------------------------------------
 
+interface ExhaustionState {
+  type: "429" | "503" | "404" | "misc";
+  at: number;
+}
+
 let currentKeyIndex = 0;
-// Track which keys are exhausted and when they were marked (resets after 60s)
-const exhaustedKeys: Map<number, number> = new Map();
+const exhaustedKeys: Map<number, ExhaustionState> = new Map();
+let globalCircuitBreakerUntil: number = 0;
+
+const COOLDOWN_429 = 5 * 60 * 1000; // 5 minutes for quota
+const COOLDOWN_503 = 30 * 1000;    // 30 seconds for high demand
+const COOLDOWN_404 = 60 * 60 * 1000; // 1 hour for errors that suggest key/model mismatch
+const GLOBAL_COOLDOWN = 60 * 1000;  // 1 minute if everything is dead
 
 const getApiKeys = (): string[] => {
   const keys: string[] = [];
-  // Always load in order: GEMINI_API_KEY, GEMINI_API_KEY_2, GEMINI_API_KEY_3 ...
   if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
   if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
   if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
@@ -35,23 +42,26 @@ const getApiKeys = (): string[] => {
 
 const getNextAvailableKey = (): string | null => {
   const keys = getApiKeys();
-  if (keys.length === 0) {
-    logger.error("No Gemini API keys configured in environment variables.");
+  if (keys.length === 0) return null;
+
+  const now = Date.now();
+
+  // Check global circuit breaker
+  if (now < globalCircuitBreakerUntil) {
     return null;
   }
 
-  const now = Date.now();
-  const COOLDOWN_MS = 300_000; // Re-try an exhausted key after 5 minutes
-
   // Reset exhausted keys whose cooldown has passed
-  for (const [idx, exhaustedAt] of exhaustedKeys.entries()) {
-    if (now - exhaustedAt > COOLDOWN_MS) {
+  for (const [idx, state] of exhaustedKeys.entries()) {
+    const cooldown = state.type === "429" ? COOLDOWN_429 : 
+                     state.type === "503" ? COOLDOWN_503 : COOLDOWN_404;
+    if (now - state.at > cooldown) {
       exhaustedKeys.delete(idx);
-      logger.info(`Gemini API key #${idx + 1} cooldown reset, available again.`);
+      logger.info(`Gemini API key #${idx + 1} (${state.type}) available again.`);
     }
   }
 
-  // Try to find an available key starting from currentKeyIndex
+  // Find next available
   for (let i = 0; i < keys.length; i++) {
     const idx = (currentKeyIndex + i) % keys.length;
     if (!exhaustedKeys.has(idx)) {
@@ -60,52 +70,39 @@ const getNextAvailableKey = (): string | null => {
     }
   }
 
-  logger.warn("All Gemini API keys are currently exhausted (quota limit). Will retry on next request.");
+  // If we reach here, all keys are exhausted. Activate circuit breaker.
+  logger.warn("All Gemini API keys exhausted. Activating temporary circuit breaker.");
+  globalCircuitBreakerUntil = now + GLOBAL_COOLDOWN;
   return null;
 };
 
-const markKeyExhausted = () => {
+const markKeyExhausted = (error: any) => {
   const keys = getApiKeys();
-  logger.warn(
-    `Gemini API key #${currentKeyIndex + 1} is quota-exceeded. Rotating to next key... (${keys.length} total keys)`
-  );
-  exhaustedKeys.set(currentKeyIndex, Date.now());
-  // Advance to next key for the next call
+  const type: ExhaustionState["type"] = 
+    error?.status === 429 || error?.message?.includes("429") ? "429" :
+    error?.status === 503 || error?.message?.includes("503") ? "503" :
+    error?.status === 404 || error?.message?.includes("404") ? "404" : "misc";
+
+  logger.warn(`Gemini API key #${currentKeyIndex + 1} marked [${type}] due to error. Rotating...`);
+  exhaustedKeys.set(currentKeyIndex, { type, at: Date.now() });
   currentKeyIndex = (currentKeyIndex + 1) % Math.max(keys.length, 1);
 };
 
-/**
- * Get a generative model instance using the next available API key.
- */
 export const getModel = (modelName: string = DEFAULT_MODEL, config?: GenerationConfig) => {
   const apiKey = getNextAvailableKey();
   if (!apiKey) {
-    throw new Error("All Gemini API keys are exhausted. Please try again later.");
+    throw new Error("High demand: All AI service instances are currently busy. Please try again in 1 minute.");
   }
   const genAI = new GoogleGenerativeAI(apiKey);
   return genAI.getGenerativeModel({ model: modelName, generationConfig: config });
 };
 
-/**
- * Check if an error is a 429 quota/rate-limit error.
- */
-const isQuotaError = (error: any): boolean => {
-  const isQuota = (
-    error?.status === 429 ||
-    error?.message?.includes("429") ||
-    error?.message?.includes("quota") ||
-    error?.message?.includes("Too Many Requests")
-  );
-  if (isQuota) {
-    logger.warn(`Quota error detected: ${error?.message || JSON.stringify(error)}`);
-  }
-  return isQuota;
+const isRetriableError = (error: any): boolean => {
+  return error?.status === 429 || error?.status === 503 || 
+         error?.message?.includes("429") || error?.message?.includes("503") ||
+         error?.message?.includes("quota") || error?.message?.includes("demand");
 };
 
-/**
- * Generate content with automatic key rotation on quota errors.
- * Tries all available keys before giving up.
- */
 async function generateContentWithRotation(
   modelName: string,
   prompt: string,
@@ -121,69 +118,39 @@ async function generateContentWithRotation(
       return result.response.text().trim();
     } catch (error: any) {
       lastError = error;
-      if (isQuotaError(error)) {
-        markKeyExhausted();
-        // Try next key
+      if (isRetriableError(error)) {
+        markKeyExhausted(error);
         continue;
       }
-      // Non-quota error — don't retry
       throw error;
     }
   }
-
   throw lastError;
 }
 
-/**
- * Generate and parse a JSON response, with key rotation + fallback.
- */
 export async function generateJSONContent<T>(
-  modelName: string,
   prompt: string,
-  fallbackValue: T
+  fallbackValue: T,
+  modelName: string = DEFAULT_MODEL
 ): Promise<T> {
   try {
     const text = await generateContentWithRotation(modelName, prompt, jsonGenerationConfig);
-    try {
-      return JSON.parse(text) as T;
-    } catch (parseError) {
-      logger.error("Failed to parse AI JSON response:", { text, parseError });
-      return fallbackValue;
-    }
+    return JSON.parse(text) as T;
   } catch (error: any) {
-    if (isQuotaError(error)) {
-      logger.warn("All Gemini API keys exhausted for JSON generation, using fallback.");
-    } else {
-      logger.error("Error in AI JSON generation:", { 
-        message: error instanceof Error ? error.message : "No message",
-        error: error,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-    }
+    logger.error("AI JSON generation failed:", { message: error.message });
     return fallbackValue;
   }
 }
 
-/**
- * Generate plain text content, with key rotation + fallback string.
- */
 export async function generateTextContent(
-  modelName: string,
   prompt: string,
-  fallbackValue: string
+  fallbackValue: string,
+  modelName: string = DEFAULT_MODEL
 ): Promise<string> {
   try {
     return await generateContentWithRotation(modelName, prompt);
   } catch (error: any) {
-    if (isQuotaError(error)) {
-      logger.warn("All Gemini API keys exhausted for text generation, using fallback.");
-    } else {
-      logger.error("Error in AI text generation:", { 
-        message: error instanceof Error ? error.message : "No message",
-        error: error,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-    }
+    logger.error("AI text generation failed:", { message: error.message });
     return fallbackValue;
   }
 }
