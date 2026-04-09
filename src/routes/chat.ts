@@ -4,6 +4,8 @@ import {
   getChatSession,
   sendMessage,
   getChatHistory,
+  getSessionHistory,
+  getUserSessions,
 } from "../controllers/chat";
 import { auth } from "../middleware/auth";
 
@@ -11,6 +13,9 @@ const router = express.Router();
 
 // Apply auth middleware to all routes
 router.use(auth);
+
+// Get all chat sessions for user
+router.get("/sessions", getUserSessions);
 
 // Create a new chat session
 router.post("/sessions", createChatSession);

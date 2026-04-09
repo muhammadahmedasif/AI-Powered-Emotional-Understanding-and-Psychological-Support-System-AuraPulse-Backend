@@ -1,29 +1,24 @@
 import { Request, Response } from "express";
 import { ChatSession, IChatSession } from "../models/ChatSession";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { v4 as uuidv4 } from "uuid";
 import { logger } from "../utils/logger";
 import { inngest } from "../inngest/client";
 import { User } from "../models/User";
 import { InngestSessionResponse, InngestEvent } from "../types/inngest";
 import { Types } from "mongoose";
-
-// Initialize Gemini API
-const genAI = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY || "AIzaSyBCBz3wQu9Jjd_icCDZf-17CUO_O8IynwI"
-);
+import { generateJSONContent, generateTextContent } from "../utils/gemini";
 
 // Create a new chat session
 export const createChatSession = async (req: Request, res: Response) => {
   try {
     // Check if user is authenticated
-    if (!req.user || !req.user.id) {
+    if (!req.user || !req.user._id) {
       return res
         .status(401)
         .json({ message: "Unauthorized - User not authenticated" });
     }
 
-    const userId = new Types.ObjectId(req.user.id);
+    const userId = req.user._id;
     const user = await User.findById(userId);
 
     if (!user) {
@@ -36,6 +31,7 @@ export const createChatSession = async (req: Request, res: Response) => {
     const session = new ChatSession({
       sessionId,
       userId,
+      title: "New Therapy Session",
       startTime: new Date(),
       status: "active",
       messages: [],
@@ -61,7 +57,7 @@ export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
     const { message } = req.body;
-    const userId = new Types.ObjectId(req.user.id);
+    const userId = req.user._id;
 
     logger.info("Processing message:", { sessionId, message });
 
@@ -107,34 +103,37 @@ export const sendMessage = async (req: Request, res: Response) => {
     logger.info("Sending message to Inngest:", { event });
 
     // Send event to Inngest for logging and analytics
-    await inngest.send(event);
+    try {
+      await inngest.send(event);
+    } catch (inngestErr) {
+      logger.warn("Inngest analytics failed, continuing chat:", inngestErr);
+    }
 
-    // Process the message directly using Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    // Analyze the message
-    const analysisPrompt = `Analyze this therapy message and provide insights. Return ONLY a valid JSON object with no markdown formatting or additional text.
-    Message: ${message}
-    Context: ${JSON.stringify({
-      memory: event.data.memory,
-      goals: event.data.goals,
-    })}
-    
-    Required JSON structure:
-    {
-      "emotionalState": "string",
-      "themes": ["string"],
-      "riskLevel": number,
-      "recommendedApproach": "string",
-      "progressIndicators": ["string"]
-    }`;
-
-    const analysisResult = await model.generateContent(analysisPrompt);
-    const analysisText = analysisResult.response.text().trim();
-    const cleanAnalysisText = analysisText
-      .replace(/```json\n|\n```/g, "")
-      .trim();
-    const analysis = JSON.parse(cleanAnalysisText);
+    const analysis = await generateJSONContent(
+      "gemini-2.0-flash",
+      `Analyze this therapy message and provide insights. 
+      Message: ${message}
+      Context: ${JSON.stringify({
+        memory: event.data.memory,
+        goals: event.data.goals,
+      })}
+      
+      Required JSON structure:
+      {
+        "emotionalState": "string",
+        "themes": ["string"],
+        "riskLevel": number,
+        "recommendedApproach": "string",
+        "progressIndicators": ["string"]
+      }`,
+      {
+        emotionalState: "neutral",
+        themes: [],
+        riskLevel: 0,
+        recommendedApproach: "supportive",
+        progressIndicators: [],
+      }
+    );
 
     logger.info("Message analysis:", analysis);
 
@@ -154,10 +153,13 @@ export const sendMessage = async (req: Request, res: Response) => {
     4. Maintains professional boundaries
     5. Considers safety and well-being`;
 
-    const responseResult = await model.generateContent(responsePrompt);
-    const response = responseResult.response.text().trim();
+    const response = await generateTextContent(
+      "gemini-2.0-flash",
+      responsePrompt,
+      "I'm here for you, though I'm experiencing high demand right now. Please try again in a moment."
+    );
 
-    logger.info("Generated response:", response);
+    logger.info("Generated response successfully");
 
     // Add message to session history
     session.messages.push({
@@ -210,9 +212,9 @@ export const getSessionHistory = async (req: Request, res: Response) => {
     const { sessionId } = req.params;
     const userId = new Types.ObjectId(req.user.id);
 
-    const session = (await ChatSession.findById(
+    const session = (await ChatSession.findOne({
       sessionId
-    ).exec()) as IChatSession;
+    }).exec()) as IChatSession;
     if (!session) {
       return res.status(404).json({ message: "Session not found" });
     }
@@ -222,6 +224,7 @@ export const getSessionHistory = async (req: Request, res: Response) => {
     }
 
     res.json({
+      title: session.title,
       messages: session.messages,
       startTime: session.startTime,
       status: session.status,
@@ -268,5 +271,18 @@ export const getChatHistory = async (req: Request, res: Response) => {
   } catch (error) {
     logger.error("Error fetching chat history:", error);
     res.status(500).json({ message: "Error fetching chat history" });
+  }
+};
+
+export const getUserSessions = async (req: Request, res: Response) => {
+  try {
+    const userId = new Types.ObjectId(req.user.id);
+    const sessions = await ChatSession.find({ userId })
+      .select('sessionId title startTime status')
+      .sort({ startTime: -1 });
+    res.json(sessions);
+  } catch (error) {
+    logger.error("Error fetching user sessions:", error);
+    res.status(500).json({ message: "Error fetching user sessions" });
   }
 };

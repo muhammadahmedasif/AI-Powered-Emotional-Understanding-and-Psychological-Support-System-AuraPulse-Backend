@@ -18,6 +18,7 @@ export interface IChatSession extends Document {
   _id: Types.ObjectId;
   sessionId: string;
   userId: Types.ObjectId;
+  title: string;
   startTime: Date;
   status: "active" | "completed" | "archived";
   messages: IChatMessage[];
@@ -40,6 +41,7 @@ const chatMessageSchema = new Schema<IChatMessage>({
 const chatSessionSchema = new Schema<IChatSession>({
   sessionId: { type: String, required: true, unique: true },
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  title: { type: String, default: "New Session" },
   startTime: { type: Date, required: true },
   status: {
     type: String,

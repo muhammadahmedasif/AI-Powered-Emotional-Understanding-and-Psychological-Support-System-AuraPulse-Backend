@@ -1,11 +1,6 @@
 import { inngest } from "./client";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateJSONContent, getModel } from "../utils/gemini";
 import { logger } from "../utils/logger";
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY || "AIzaSyBCBz3wQu9Jjd_icCDZf-17CUO_O8IynwI"
-);
 
 // Function to handle chat message processing
 export const processChatMessage = inngest.createFunction(
@@ -38,47 +33,31 @@ export const processChatMessage = inngest.createFunction(
         historyLength: history?.length,
       });
 
-      // Analyze the message using Gemini
       const analysis = await step.run("analyze-message", async () => {
-        try {
-          const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const prompt = `Analyze this therapy message and provide insights. 
+        Message: ${message}
+        Context: ${JSON.stringify({ memory, goals })}
+        
+        Required JSON structure:
+        {
+          "emotionalState": "string",
+          "themes": ["string"],
+          "riskLevel": number,
+          "recommendedApproach": "string",
+          "progressIndicators": ["string"]
+        }`;
 
-          const prompt = `Analyze this therapy message and provide insights. Return ONLY a valid JSON object with no markdown formatting or additional text.
-          Message: ${message}
-          Context: ${JSON.stringify({ memory, goals })}
-          
-          Required JSON structure:
+        return await generateJSONContent(
+          "gemini-2.0-flash",
+          prompt,
           {
-            "emotionalState": "string",
-            "themes": ["string"],
-            "riskLevel": number,
-            "recommendedApproach": "string",
-            "progressIndicators": ["string"]
-          }`;
-
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          const text = response.text().trim();
-
-          logger.info("Received analysis from Gemini:", { text });
-
-          // Clean the response text to ensure it's valid JSON
-          const cleanText = text.replace(/```json\n|\n```/g, "").trim();
-          const parsedAnalysis = JSON.parse(cleanText);
-
-          logger.info("Successfully parsed analysis:", parsedAnalysis);
-          return parsedAnalysis;
-        } catch (error) {
-          logger.error("Error in message analysis:", { error, message });
-          // Return a default analysis instead of throwing
-          return {
             emotionalState: "neutral",
             themes: [],
             riskLevel: 0,
             recommendedApproach: "supportive",
             progressIndicators: [],
-          };
-        }
+          }
+        );
       });
 
       // Update memory based on analysis
@@ -105,10 +84,9 @@ export const processChatMessage = inngest.createFunction(
         });
       }
 
-      // Generate therapeutic response
       const response = await step.run("generate-response", async () => {
         try {
-          const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+          const model = getModel("gemini-2.0-flash");
 
           const prompt = `${systemPrompt}
           
@@ -126,13 +104,9 @@ export const processChatMessage = inngest.createFunction(
           5. Considers safety and well-being`;
 
           const result = await model.generateContent(prompt);
-          const responseText = result.response.text().trim();
-
-          logger.info("Generated response:", { responseText });
-          return responseText;
+          return result.response.text().trim();
         } catch (error) {
           logger.error("Error generating response:", { error, message });
-          // Return a default response instead of throwing
           return "I'm here to support you. Could you tell me more about what's on your mind?";
         }
       });
@@ -176,10 +150,7 @@ export const analyzeTherapySession = inngest.createFunction(
         return event.data.notes || event.data.transcript;
       });
 
-      // Analyze the session using Gemini
       const analysis = await step.run("analyze-with-gemini", async () => {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
         const prompt = `Analyze this therapy session and provide insights:
         Session Content: ${sessionContent}
         
@@ -188,15 +159,19 @@ export const analyzeTherapySession = inngest.createFunction(
         2. Emotional state analysis
         3. Potential areas of concern
         4. Recommendations for follow-up
-        5. Progress indicators
-        
-        Format the response as a JSON object.`;
+        5. Progress indicators`;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-
-        return JSON.parse(text);
+        return await generateJSONContent(
+          "gemini-2.0-flash",
+          prompt,
+          {
+            themes: [],
+            emotionalState: "neutral",
+            areasOfConcern: [],
+            recommendations: [],
+            progressIndicators: [],
+          }
+        );
       });
 
       // Store the analysis
@@ -244,12 +219,9 @@ export const generateActivityRecommendations = inngest.createFunction(
         };
       });
 
-      // Generate recommendations using Gemini
       const recommendations = await step.run(
         "generate-recommendations",
         async () => {
-          const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
           const prompt = `Based on the following user context, generate personalized activity recommendations:
         User Context: ${JSON.stringify(userContext)}
         
@@ -258,15 +230,15 @@ export const generateActivityRecommendations = inngest.createFunction(
         2. Reasoning for each recommendation
         3. Expected benefits
         4. Difficulty level
-        5. Estimated duration
-        
-        Format the response as a JSON object.`;
+        5. Estimated duration`;
 
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          const text = response.text();
-
-          return JSON.parse(text);
+          return await generateJSONContent(
+            "gemini-2.0-flash",
+            prompt,
+            {
+              recommendations: [],
+            }
+          );
         }
       );
 
