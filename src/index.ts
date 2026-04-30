@@ -2,11 +2,11 @@ import dotenv from "dotenv";
 // Load environment variables FIRST before any other imports
 dotenv.config();
 
+import "./types";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import { serve } from "inngest/express";
 import { errorHandler } from "./middleware/errorHandler";
 import { logger } from "./utils/logger";
 import authRouter from "./routes/auth";
@@ -14,8 +14,6 @@ import chatRouter from "./routes/chat";
 import moodRouter from "./routes/mood";
 import activityRouter from "./routes/activity";
 import { connectDB } from "./utils/db";
-import { inngest } from "./inngest/client";
-import { functions as inngestFunctions } from "./inngest/functions";
 
 // Create Express app
 const app = express();
@@ -26,18 +24,17 @@ app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 app.use(morgan("dev")); // HTTP request logger
 
-// Set up Inngest endpoint
-app.use(
-  "/api/inngest",
-  serve({ client: inngest, functions: inngestFunctions })
-);
-// OnaF6EGHhgYY9OPv
-
 // Routes
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });
 });
 
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/mood", moodRouter);
+app.use("/api/v1/activity", activityRouter);
+
+// Backward compatibility (remove prefix requirement for existing clients)
 app.use("/auth", authRouter);
 app.use("/chat", chatRouter);
 app.use("/api/mood", moodRouter);
@@ -56,9 +53,6 @@ const startServer = async () => {
     const PORT = process.env.PORT || 3001;
     app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
-      logger.info(
-        `Inngest endpoint available at http://localhost:${PORT}/api/inngest`
-      );
     });
   } catch (error) {
     logger.error("Failed to start server:", error);

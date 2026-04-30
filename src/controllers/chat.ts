@@ -1,12 +1,56 @@
 import { Request, Response } from "express";
-import { ChatSession, IChatSession } from "../models/ChatSession";
-import { v4 as uuidv4 } from "uuid";
+import { ChatSession } from "../models/ChatSession";
+import { randomUUID } from "crypto";
 import { logger } from "../utils/logger";
-import { inngest } from "../inngest/client";
 import { User } from "../models/User";
-import { InngestSessionResponse, InngestEvent } from "../types/inngest";
 import { Types } from "mongoose";
-import { generateJSONContent, generateTextContent } from "../utils/gemini";
+import { generateResponse } from "../services/ai";
+import { 
+  generateAIResponseStream, 
+  buildRecentContext 
+} from "../services/prompt.service";
+import { MessageAnalysis } from "../types";
+
+const RECENT_MESSAGE_LIMIT = 2;
+const MEMORY_UPDATE_INTERVAL = 10;
+
+const defaultAnalysis: MessageAnalysis = {
+  emotionalState: "neutral",
+  themes: [],
+  riskLevel: 0,
+  recommendedApproach: "supportive",
+  progressIndicators: [],
+};
+
+async function updateSessionSummary(session: any) {
+  const messages = session.messages.map((item: any) => ({
+    role: item.role,
+    content: item.content,
+  }));
+
+  const olderMessages = messages.slice(0, -RECENT_MESSAGE_LIMIT);
+  const shouldUpdate =
+    olderMessages.length > 0 &&
+    (!session.summary || messages.length % MEMORY_UPDATE_INTERVAL === 0);
+
+  if (!shouldUpdate) {
+    return;
+  }
+
+  const history = buildRecentContext(olderMessages, 20);
+  const prompt = `Summarize this mental health chat memory in 2-4 sentences. Focus on durable context (goals, concerns, safety).
+Existing: ${session.summary || "None"}
+New: ${history}`;
+
+  try {
+    session.summary = await generateResponse(prompt, { num_predict: 100, temperature: 0.3 });
+    await session.save();
+  } catch (error) {
+    logger.warn("Could not update chat summary", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+}
 
 // Create a new chat session
 export const createChatSession = async (req: Request, res: Response) => {
@@ -26,7 +70,7 @@ export const createChatSession = async (req: Request, res: Response) => {
     }
 
     // Generate a unique sessionId
-    const sessionId = uuidv4();
+    const sessionId = randomUUID();
 
     const session = new ChatSession({
       sessionId,
@@ -59,7 +103,11 @@ export const sendMessage = async (req: Request, res: Response) => {
     const { message } = req.body;
     const userId = req.user._id;
 
-    logger.info("Processing message:", { sessionId, message });
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({ message: "Message is required" });
+    }
+
+    logger.info("Processing chat message", { sessionId });
 
     // Find session by sessionId
     const session = await ChatSession.findOne({ sessionId });
@@ -73,91 +121,38 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    // Create Inngest event for message processing
-    const event: InngestEvent = {
-      name: "therapy/session.message",
-      data: {
-        message,
-        history: session.messages,
-        memory: {
-          userProfile: {
-            emotionalState: [],
-            riskLevel: 0,
-            preferences: {},
-          },
-          sessionContext: {
-            conversationThemes: [],
-            currentTechnique: null,
-          },
-        },
-        goals: [],
-        systemPrompt: `You are an AI therapist assistant. Your role is to:
-        1. Provide empathetic and supportive responses
-        2. Use evidence-based therapeutic techniques
-        3. Maintain professional boundaries
-        4. Monitor for risk factors
-        5. Guide users toward their therapeutic goals`,
-      },
-    };
+    const recentMessagesString = buildRecentContext(
+      session.messages.map((item) => ({
+        role: item.role,
+        content: item.content,
+      }))
+    );
+    const summary = session.summary || "";
 
-    logger.info("Sending message to Inngest:", { event });
-
-    // Send event to Inngest for logging and analytics
-    try {
-      await inngest.send(event);
-    } catch (inngestErr) {
-      logger.warn("Inngest analytics failed, continuing chat:", inngestErr);
-    }
-
-    const analysis = await generateJSONContent(
-      `Analyze this therapy message and provide insights. 
-      Message: ${message}
-      Context: ${JSON.stringify({
-        memory: event.data.memory,
-        goals: event.data.goals,
-      })}
-      
-      Required JSON structure:
-      {
-        "emotionalState": "string",
-        "themes": ["string"],
-        "riskLevel": number,
-        "recommendedApproach": "string",
-        "progressIndicators": ["string"]
-      }`,
-      {
-        emotionalState: "neutral",
-        themes: [],
-        riskLevel: 0,
-        recommendedApproach: "supportive",
-        progressIndicators: [],
+    // Abort controller to stop AI generation if client disconnects
+    const abortController = new AbortController();
+    req.on("close", () => {
+      if (!res.writableEnded) {
+        logger.info("Client disconnected, aborting AI stream", { sessionId });
+        abortController.abort();
       }
+    });
+
+    // Single AI call for response, streaming text as it arrives
+    const { reply, analysis } = await generateAIResponseStream(
+      message,
+      recentMessagesString,
+      summary,
+      (chunk) => {
+        res.write(JSON.stringify({ t: "chunk", d: chunk }) + "\n");
+      },
+      abortController.signal
     );
 
-    logger.info("Message analysis:", analysis);
-
-    // Generate therapeutic response
-    const responsePrompt = `${event.data.systemPrompt}
-    
-    Based on the following context, generate a therapeutic response:
-    Message: ${message}
-    Analysis: ${JSON.stringify(analysis)}
-    Memory: ${JSON.stringify(event.data.memory)}
-    Goals: ${JSON.stringify(event.data.goals)}
-    
-    Provide a response that:
-    1. Addresses the immediate emotional needs
-    2. Uses appropriate therapeutic techniques
-    3. Shows empathy and understanding
-    4. Maintains professional boundaries
-    5. Considers safety and well-being`;
-
-    const response = await generateTextContent(
-      responsePrompt,
-      "I'm here for you, though I'm experiencing high demand right now. Please try again in a moment."
-    );
-
-    logger.info("Generated response successfully");
+    logger.info("Generated response successfully", {
+      sessionId,
+      riskLevel: analysis.riskLevel,
+    });
 
     // Add message to session history
     session.messages.push({
@@ -168,7 +163,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     session.messages.push({
       role: "assistant",
-      content: response,
+      content: reply,
       timestamp: new Date(),
       metadata: {
         analysis,
@@ -181,20 +176,26 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     // Save the updated session
     await session.save();
+
+    // Update summary in background — don't block the response
+    updateSessionSummary(session).catch((err) =>
+      logger.warn("Background summary update failed", { error: String(err) })
+    );
+
     logger.info("Session updated successfully:", { sessionId });
 
-    // Return the response
-    res.json({
-      response,
-      message: response,
+    // Send final completion message with metadata
+    res.write(JSON.stringify({
+      t: "done",
       analysis,
       metadata: {
         progress: {
           emotionalState: analysis.emotionalState,
           riskLevel: analysis.riskLevel,
-        },
-      },
-    });
+        }
+      }
+    }) + "\n");
+    res.end();
   } catch (error) {
     logger.error("Error in sendMessage:", error);
     res.status(500).json({
@@ -204,40 +205,14 @@ export const sendMessage = async (req: Request, res: Response) => {
   }
 };
 
-// Get chat session history
-export const getSessionHistory = async (req: Request, res: Response) => {
-  try {
-    const { sessionId } = req.params;
-    const userId = new Types.ObjectId(req.user.id);
-
-    const session = (await ChatSession.findOne({
-      sessionId
-    }).exec()) as IChatSession;
-    if (!session) {
-      return res.status(404).json({ message: "Session not found" });
-    }
-
-    if (session.userId.toString() !== userId.toString()) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    res.json({
-      title: session.title,
-      messages: session.messages,
-      startTime: session.startTime,
-      status: session.status,
-    });
-  } catch (error) {
-    logger.error("Error fetching session history:", error);
-    res.status(500).json({ message: "Error fetching session history" });
-  }
-};
-
 export const getChatSession = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
+    const userId = req.user._id;
+
     logger.info(`Getting chat session: ${sessionId}`);
-    const chatSession = await ChatSession.findOne({ sessionId });
+    const chatSession = await ChatSession.findOne({ sessionId, userId });
+
     if (!chatSession) {
       logger.warn(`Chat session not found: ${sessionId}`);
       return res.status(404).json({ error: "Chat session not found" });
@@ -253,7 +228,7 @@ export const getChatSession = async (req: Request, res: Response) => {
 export const getChatHistory = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
-    const userId = new Types.ObjectId(req.user.id);
+    const userId = req.user._id;
 
     // Find session by sessionId instead of _id
     const session = await ChatSession.findOne({ sessionId });
@@ -274,7 +249,7 @@ export const getChatHistory = async (req: Request, res: Response) => {
 
 export const getUserSessions = async (req: Request, res: Response) => {
   try {
-    const userId = new Types.ObjectId(req.user.id);
+    const userId = req.user._id;
     const sessions = await ChatSession.find({ userId })
       .select('sessionId title startTime status')
       .sort({ startTime: -1 });

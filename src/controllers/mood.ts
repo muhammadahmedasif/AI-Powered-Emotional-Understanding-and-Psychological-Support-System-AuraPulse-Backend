@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import { Mood } from "../models/Mood";
 import { logger } from "../utils/logger";
-import { sendMoodUpdateEvent } from "../utils/inngestEvents";
 
 // Create a new mood entry
 export const createMood = async (
@@ -12,11 +11,7 @@ export const createMood = async (
 ) => {
   try {
     const { score, note } = req.body;
-    const userId = req.user?._id; // From auth middleware
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const userId = req.user._id;
 
     const mood = new Mood({
       userId,
@@ -27,14 +22,6 @@ export const createMood = async (
 
     await mood.save();
     logger.info(`Mood entry created for user ${userId}`);
-
-    // Send mood update event to Inngest
-    await sendMoodUpdateEvent({
-      userId,
-      mood: score,
-      note,
-      timestamp: mood.timestamp,
-    });
 
     res.status(201).json({
       success: true,
@@ -52,11 +39,7 @@ export const getMoodHistory = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const userId = req.user._id;
 
     const { startDate, endDate, limit } = req.query;
 
@@ -96,11 +79,7 @@ export const getMoodStats = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const userId = req.user._id;
 
     const { period = "month" } = req.query; // 'week', 'month', 'year'
 
@@ -120,7 +99,7 @@ export const getMoodStats = async (
     const stats = await Mood.aggregate([
       {
         $match: {
-          userId: new mongoose.Types.ObjectId(userId as string),
+          userId: userId,
           timestamp: { $gte: startDate, $lte: now },
         },
       },

@@ -4,7 +4,7 @@ import {
   createMood,
   getMoodHistory,
   getMoodStats,
-} from "../controllers/moodController";
+} from "../controllers/mood";
 
 const router = express.Router();
 

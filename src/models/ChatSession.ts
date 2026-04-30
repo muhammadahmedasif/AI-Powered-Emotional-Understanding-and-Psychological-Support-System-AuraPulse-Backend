@@ -1,11 +1,12 @@
 import { Document, Schema, model, Types } from "mongoose";
+import { MessageAnalysis } from "../types";
 
 export interface IChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
   metadata?: {
-    analysis?: any;
+    analysis?: MessageAnalysis;
     currentGoal?: string | null;
     progress?: {
       emotionalState?: string;
@@ -19,6 +20,7 @@ export interface IChatSession extends Document {
   sessionId: string;
   userId: Types.ObjectId;
   title: string;
+  summary?: string;
   startTime: Date;
   status: "active" | "completed" | "archived";
   messages: IChatMessage[];
@@ -42,6 +44,7 @@ const chatSessionSchema = new Schema<IChatSession>({
   sessionId: { type: String, required: true, unique: true },
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   title: { type: String, default: "New Session" },
+  summary: { type: String, default: "" },
   startTime: { type: Date, required: true },
   status: {
     type: String,

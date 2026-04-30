@@ -4,7 +4,7 @@ import {
   logActivity,
   getActivities,
   getTodayActivities,
-} from "../controllers/activityController";
+} from "../controllers/activity";
 
 const router = express.Router();
 

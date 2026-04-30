@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Activity } from "../models/Activity";
 import { logger } from "../utils/logger";
-import { sendActivityCompletionEvent } from "../utils/inngestEvents";
 
 // Log a new activity
 export const logActivity = async (
@@ -11,11 +10,7 @@ export const logActivity = async (
 ) => {
   try {
     const { type, name, description, duration } = req.body;
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const userId = req.user._id;
 
     const activity = new Activity({
       userId,
@@ -28,16 +23,6 @@ export const logActivity = async (
 
     await activity.save();
     logger.info(`Activity logged for user ${userId}`);
-
-    // Send activity completion event to Inngest
-    await sendActivityCompletionEvent({
-      userId,
-      id: activity._id,
-      type,
-      name,
-      duration,
-      timestamp: activity.timestamp,
-    });
 
     res.status(201).json({
       success: true,
@@ -55,11 +40,7 @@ export const getActivities = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const userId = req.user._id;
 
     const activities = await Activity.find({ userId }).sort({ timestamp: -1 });
 
@@ -79,11 +60,7 @@ export const getTodayActivities = async (
   next: NextFunction
 ) => {
   try {
-    const userId = req.user?._id;
-
-    if (!userId) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
+    const userId = req.user._id;
 
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);

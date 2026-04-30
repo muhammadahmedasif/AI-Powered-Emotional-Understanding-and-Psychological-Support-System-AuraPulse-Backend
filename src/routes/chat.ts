@@ -4,7 +4,6 @@ import {
   getChatSession,
   sendMessage,
   getChatHistory,
-  getSessionHistory,
   getUserSessions,
 } from "../controllers/chat";
 import { auth } from "../middleware/auth";

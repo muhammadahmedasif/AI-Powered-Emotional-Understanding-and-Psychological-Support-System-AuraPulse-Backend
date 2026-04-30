@@ -1,14 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
+import { AuthUser } from "../types";
 
-// Extend Express Request type to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: any;
-    }
-  }
+interface JwtPayload {
+  userId: string;
 }
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
@@ -22,14 +18,18 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "your-secret-key"
-    ) as any;
+    ) as JwtPayload;
     const user = await User.findById(decoded.userId);
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
 
-    req.user = user;
+    req.user = {
+      _id: user._id as any,
+      email: user.email,
+      name: user.name,
+    };
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid authentication token" });
