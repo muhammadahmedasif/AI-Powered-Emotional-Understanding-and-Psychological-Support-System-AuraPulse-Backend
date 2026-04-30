@@ -1,79 +1,25 @@
-# ======================
 # Dependencies
-# ======================
 node_modules/
-.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# ======================
 # Environment / secrets
-# ======================
 .env
 .env.*
-secrete.txt
 *.pem
 
-# ======================
 # Logs
-# ======================
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-auto-commit.log
 
-# ======================
-# Build / output
-# ======================
+# Build output
 dist/
 build/
-.out/
-.next/
-coverage/
-coverage.json
 
-# ======================
-# Hardhat / Web3
-# ======================
-cache/
-typechain/
-typechain-types/
-ignition/deployments/chain-31337
-
-# ======================
-# Vercel
-# ======================
-.vercel
-
-# ======================
-# Misc files
-# ======================
+# IDE / OS
 .DS_Store
-.cursorrules
 *.tsbuildinfo
+.vscode/
+.idea/
 
-# ======================
-# OS / temp / personal
-# ======================
-idea.txt
-info.txt
-structure.md
-structuree.md
-test.md
-
-# ======================
-# Shell scripts (personal)
-# ======================
-push.sh
-prerun.sh
-postrun.sh
-
-# ======================
-# Custom local folders
-# ======================
-Zerepy/
+# Coverage
+coverage/

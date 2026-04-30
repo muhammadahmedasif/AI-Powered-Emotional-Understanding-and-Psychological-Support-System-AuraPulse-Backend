@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { ChatSession } from "../models/ChatSession";
 import { randomUUID } from "crypto";
 import { logger } from "../utils/logger";
-import { User } from "../models/User";
 import { Types } from "mongoose";
 import { generateResponse } from "../services/ai";
 import { 
@@ -11,7 +10,7 @@ import {
 } from "../services/prompt.service";
 import { MessageAnalysis } from "../types";
 
-const RECENT_MESSAGE_LIMIT = 2;
+
 const MEMORY_UPDATE_INTERVAL = 10;
 
 const defaultAnalysis: MessageAnalysis = {
@@ -28,7 +27,7 @@ async function updateSessionSummary(session: any) {
     content: item.content,
   }));
 
-  const olderMessages = messages.slice(0, -RECENT_MESSAGE_LIMIT);
+  const olderMessages = messages.slice(0, -2);
   const shouldUpdate =
     olderMessages.length > 0 &&
     (!session.summary || messages.length % MEMORY_UPDATE_INTERVAL === 0);
@@ -63,13 +62,7 @@ export const createChatSession = async (req: Request, res: Response) => {
     }
 
     const userId = req.user._id;
-    const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Generate a unique sessionId
     const sessionId = randomUUID();
 
     const session = new ChatSession({
@@ -154,35 +147,57 @@ export const sendMessage = async (req: Request, res: Response) => {
       riskLevel: analysis.riskLevel,
     });
 
-    // Add message to session history
-    session.messages.push({
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-    });
-
-    session.messages.push({
-      role: "assistant",
-      content: reply,
-      timestamp: new Date(),
-      metadata: {
-        analysis,
-        progress: {
-          emotionalState: analysis.emotionalState,
-          riskLevel: analysis.riskLevel,
-        },
+    // Use atomic update to push both messages at once
+    const updatedSession = await ChatSession.findOneAndUpdate(
+      { sessionId, userId },
+      { 
+        $push: { 
+          messages: { 
+            $each: [
+              {
+                role: "user",
+                content: message,
+                timestamp: new Date()
+              },
+              {
+                role: "assistant",
+                content: reply,
+                timestamp: new Date(),
+                metadata: {
+                  analysis,
+                  progress: {
+                    emotionalState: analysis.emotionalState,
+                    riskLevel: analysis.riskLevel,
+                  },
+                },
+              }
+            ] 
+          } 
+        }
       },
-    });
-
-    // Save the updated session
-    await session.save();
-
-    // Update summary in background — don't block the response
-    updateSessionSummary(session).catch((err) =>
-      logger.warn("Background summary update failed", { error: String(err) })
+      { new: true }
     );
 
-    logger.info("Session updated successfully:", { sessionId });
+    if (updatedSession) {
+      logger.info("Session updated atomically", { 
+        sessionId, 
+        messageCount: updatedSession.messages.length 
+      });
+
+      // Update title if it's still the default
+      if (updatedSession.messages.length >= 2 && (updatedSession.title === "New Session" || updatedSession.title === "New Therapy Session")) {
+        generateSessionTitle(message, reply).then(title => {
+          if (title && title.length > 3) {
+            ChatSession.updateOne({ sessionId }, { title }).catch(err => logger.error("Title update error", err));
+          }
+        }).catch(err => logger.error("Title generation error", err));
+      }
+
+      // Update summary in background
+      updateSessionSummary(updatedSession).catch((err) =>
+        logger.warn("Background summary update failed", { error: String(err) })
+      );
+    }
 
     // Send final completion message with metadata
     res.write(JSON.stringify({
@@ -196,12 +211,12 @@ export const sendMessage = async (req: Request, res: Response) => {
       }
     }) + "\n");
     res.end();
+    logger.info("Session updated successfully:", { sessionId });
   } catch (error) {
     logger.error("Error in sendMessage:", error);
-    res.status(500).json({
-      message: "Error processing message",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Error processing message" });
+    }
   }
 };
 
@@ -229,17 +244,38 @@ export const getChatHistory = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
     const userId = req.user._id;
-
-    // Find session by sessionId instead of _id
-    const session = await ChatSession.findOne({ sessionId });
+    logger.info(`Fetching chat history`, { sessionId, userId: userId.toString() });
+    
+    // 1. Try finding by UUID
+    let session = await ChatSession.findOne({ sessionId });
+    
+    // 2. Fallback to _id if not found and sessionId looks like an ObjectId
+    if (!session && Types.ObjectId.isValid(sessionId)) {
+      session = await ChatSession.findById(sessionId);
+    }
+    
     if (!session) {
+      logger.warn(`Session not found in DB with either ID type`, { sessionId });
       return res.status(404).json({ message: "Session not found" });
     }
 
+    logger.info(`Session found`, { 
+      sessionId: session.sessionId, 
+      ownerId: session.userId.toString(),
+      requestUserId: userId.toString(),
+      messagesCount: session.messages.length 
+    });
+
     if (session.userId.toString() !== userId.toString()) {
+      logger.warn(`Ownership mismatch`, {
+        sessionId,
+        ownerId: session.userId.toString(),
+        requestUserId: userId.toString()
+      });
       return res.status(403).json({ message: "Unauthorized" });
     }
 
+    logger.info(`Returning ${session.messages.length} messages to client`);
     res.json(session.messages);
   } catch (error) {
     logger.error("Error fetching chat history:", error);
@@ -251,11 +287,42 @@ export const getUserSessions = async (req: Request, res: Response) => {
   try {
     const userId = req.user._id;
     const sessions = await ChatSession.find({ userId })
-      .select('sessionId title startTime status')
+      .select("sessionId title startTime status messages")
       .sort({ startTime: -1 });
-    res.json(sessions);
+
+    const sessionsWithPreview = sessions.map((session) => {
+      const lastMessage = session.messages.length > 0 
+        ? session.messages[session.messages.length - 1] 
+        : null;
+      return {
+        sessionId: session.sessionId,
+        title: session.title,
+        startTime: session.startTime,
+        status: session.status,
+        lastMessage: lastMessage ? {
+          content: lastMessage.content,
+          timestamp: lastMessage.timestamp
+        } : null,
+        messageCount: session.messages.length
+      };
+    });
+    res.json(sessionsWithPreview);
   } catch (error) {
     logger.error("Error fetching user sessions:", error);
     res.status(500).json({ message: "Error fetching user sessions" });
   }
 };
+
+/**
+ * Generate a concise title for the session based on the first exchange.
+ * Uses the existing Ollama service for consistency.
+ */
+async function generateSessionTitle(userMsg: string, aiMsg: string): Promise<string | null> {
+  try {
+    const prompt = `Generate a 2-4 word title for this therapy session based on the exchange.\nUser: ${userMsg.slice(0, 100)}\nAI: ${aiMsg.slice(0, 100)}\nTitle:`;
+    const title = await generateResponse(prompt, { num_predict: 10, temperature: 0.3 });
+    return title.replace(/^["']|["']$/g, "").trim() || null;
+  } catch {
+    return null;
+  }
+}

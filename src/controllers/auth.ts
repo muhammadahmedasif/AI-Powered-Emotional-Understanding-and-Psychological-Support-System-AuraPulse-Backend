@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
+import { sendPasswordResetEmail } from "../services/email.service";
 import { User } from "../models/User";
-import { Session } from "../models/Session";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -14,8 +14,6 @@ export const register = async (req: Request, res: Response) => {
     }
     // Check if user exists
     const existingUser = await User.findOne({ email });
-    const existingUser1 = await User.find({});
-    console.log(existingUser1);
     if (existingUser) {
       return res.status(409).json({ message: "Email already in use." });
     }
@@ -68,17 +66,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "24h" }
     );
 
-    // Create session
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours from now
 
-    const session = new Session({
-      userId: user._id,
-      token,
-      expiresAt,
-      deviceInfo: req.headers["user-agent"],
-    });
-    await session.save();
 
     // Respond with user data and token
     res.json({
@@ -95,16 +83,9 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
-  try {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-    if (token) {
-      await Session.deleteOne({ token });
-    }
-    res.json({ message: "Logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
+export const logout = async (_req: Request, res: Response) => {
+  // Stateless JWT — client simply discards the token
+  res.json({ message: "Logged out successfully" });
 };
 
 export const forgotPassword = async (req: Request, res: Response) => {
@@ -127,10 +108,11 @@ export const forgotPassword = async (req: Request, res: Response) => {
       { expiresIn: "15m" }
     );
 
-    // TODO: Send email
-    const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
-    console.log(`[Email Placeholder] Send to ${user.email}: Click here to reset your password: ${resetLink}`);
-    // example with nodemailer: await transporter.sendMail({ to: user.email, subject: "Reset Password", html: `<a href="${resetLink}">Reset</a>` });
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+    
+    // Send email using the nodemailer service
+    await sendPasswordResetEmail(user.email, resetLink);
 
     res.status(200).json({ message: "If an account exists, a reset link has been sent." });
   } catch (error) {

@@ -29,16 +29,17 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running" });
 });
 
-app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/chat", chatRouter);
-app.use("/api/v1/mood", moodRouter);
-app.use("/api/v1/activity", activityRouter);
-
-// Backward compatibility (remove prefix requirement for existing clients)
-app.use("/auth", authRouter);
-app.use("/chat", chatRouter);
+// API Routes
+app.use("/api/auth", authRouter);
+app.use("/api/chat", chatRouter);
 app.use("/api/mood", moodRouter);
 app.use("/api/activity", activityRouter);
+
+// Backward compatibility for existing frontend clients
+app.use("/auth", authRouter);
+app.use("/chat", chatRouter);
+app.use("/mood", moodRouter);
+app.use("/activity", activityRouter);
 
 // Error handling middleware
 app.use(errorHandler);
