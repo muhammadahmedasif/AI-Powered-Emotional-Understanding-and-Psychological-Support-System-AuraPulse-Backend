@@ -81,3 +81,36 @@ export const getTodayActivities = async (
     next(error);
   }
 };
+
+// Delete an activity
+export const deleteActivity = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { activityId } = req.params;
+    const userId = req.user._id;
+
+    const deletedActivity = await Activity.findOneAndDelete({
+      _id: activityId,
+      userId,
+    });
+
+    if (!deletedActivity) {
+      return res.status(404).json({
+        success: false,
+        message: "Activity not found or unauthorized",
+      });
+    }
+
+    logger.info(`Activity ${activityId} deleted for user ${userId}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Activity deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

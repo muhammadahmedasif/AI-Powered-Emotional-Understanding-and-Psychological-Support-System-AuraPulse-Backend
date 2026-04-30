@@ -6,6 +6,7 @@ export interface IActivity extends Document {
   name: string;
   description?: string;
   duration?: number;
+  completed: boolean;
   timestamp: Date;
 }
 
@@ -40,6 +41,10 @@ const activitySchema = new Schema<IActivity>(
     duration: {
       type: Number,
       min: 0,
+    },
+    completed: {
+      type: Boolean,
+      default: true,
     },
     timestamp: {
       type: Date,

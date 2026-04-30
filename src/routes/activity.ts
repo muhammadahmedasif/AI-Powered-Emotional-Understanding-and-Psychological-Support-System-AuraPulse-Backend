@@ -4,6 +4,7 @@ import {
   logActivity,
   getActivities,
   getTodayActivities,
+  deleteActivity,
 } from "../controllers/activity";
 
 const router = express.Router();
@@ -19,5 +20,8 @@ router.get("/today", getTodayActivities);
 
 // Log a new activity
 router.post("/", logActivity);
+
+// Delete an activity
+router.delete("/:activityId", deleteActivity);
 
 export default router;
