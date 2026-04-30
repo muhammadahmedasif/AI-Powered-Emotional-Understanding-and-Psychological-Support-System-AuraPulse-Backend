@@ -1,129 +1,104 @@
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:04:05.172Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:04:05.178Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:04:28.503Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:04:28.508Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:06:35.313Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:06:35.321Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:08:12.882Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:08:12.886Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:12:17.671Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:12:17.675Z"}
-{"level":"info","message":"Processing chat message","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:12:41.916Z"}
-{"estimatedTokens":583,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2332,"systemPromptCount":0,"timestamp":"2026-04-30T17:12:41.924Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:13:37.581Z"}
-{"level":"info","message":"Session updated atomically","messageCount":6,"sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:13:37.630Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:13:37.631Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:13:52.513Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":0,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:13:52.515Z"}
-{"level":"info","message":"Processing chat message","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:14:02.406Z"}
-{"estimatedTokens":507,"level":"info","memorySource":"none","message":"Prompt metrics","promptLengthChars":2028,"systemPromptCount":0,"timestamp":"2026-04-30T17:14:02.409Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:14:11.027Z"}
-{"level":"info","message":"Session updated atomically","messageCount":2,"sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:14:11.034Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:14:11.037Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:19:16.544Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:19:16.550Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:19:48.409Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:19:48.414Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:22:37.993Z","userId":"69f38fdd9c8746e682f6ae7b"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69f38fdd9c8746e682f6ae7b","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:22:38.004Z"}
-{"level":"warn","message":"Ownership mismatch","ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69f38fdd9c8746e682f6ae7b","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:22:38.006Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:23:48.564Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:23:48.569Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:25:08.536Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:25:08.544Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:28:47.210Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:28:47.214Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:30:15.117Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:30:15.121Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T17:30:15.122Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:30:17.937Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":6,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:30:17.946Z"}
-{"level":"info","message":"Returning 6 messages to client","timestamp":"2026-04-30T17:30:17.948Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:30:34.295Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:30:34.299Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T17:30:34.300Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:30:36.767Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":6,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T17:30:36.772Z"}
-{"level":"info","message":"Returning 6 messages to client","timestamp":"2026-04-30T17:30:36.772Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"140162a9-f6d8-4b27-ae0b-333ff3df1a91","timestamp":"2026-04-30T17:30:38.505Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":4,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"140162a9-f6d8-4b27-ae0b-333ff3df1a91","timestamp":"2026-04-30T17:30:38.509Z"}
-{"level":"info","message":"Returning 4 messages to client","timestamp":"2026-04-30T17:30:38.510Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:30:40.818Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:30:40.822Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T17:30:40.823Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:30:45.147Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":0,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:30:45.149Z"}
-{"level":"info","message":"Returning 0 messages to client","timestamp":"2026-04-30T17:30:45.149Z"}
-{"level":"info","message":"Processing chat message","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:30:53.276Z"}
-{"estimatedTokens":509,"level":"info","memorySource":"none","message":"Prompt metrics","promptLengthChars":2033,"systemPromptCount":0,"timestamp":"2026-04-30T17:30:53.281Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:31:45.729Z"}
-{"level":"info","message":"Session updated atomically","messageCount":2,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:31:45.752Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:31:45.755Z"}
-{"level":"info","message":"Processing chat message","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:31:54.007Z"}
-{"estimatedTokens":591,"level":"info","memorySource":"history","message":"Prompt metrics","promptLengthChars":2362,"systemPromptCount":0,"timestamp":"2026-04-30T17:31:54.039Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:32:48.018Z"}
-{"level":"info","message":"Session updated atomically","messageCount":4,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:32:48.029Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:32:48.031Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:33:00.367Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T17:33:00.379Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T17:33:00.380Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:33:03.712Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":4,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:33:03.715Z"}
-{"level":"info","message":"Returning 4 messages to client","timestamp":"2026-04-30T17:33:03.716Z"}
-{"level":"info","message":"Processing chat message","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:41:11.789Z"}
-{"estimatedTokens":621,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2483,"systemPromptCount":0,"timestamp":"2026-04-30T17:41:11.791Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:42:20.568Z"}
-{"level":"info","message":"Session updated atomically","messageCount":6,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:42:20.580Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T17:42:20.581Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:55:43.248Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:55:43.258Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:56:35.687Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:56:35.694Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:57:33.964Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:57:33.970Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:58:11.420Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:58:11.429Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T17:58:39.738Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T17:58:39.747Z"}
-{"level":"info","message":"Processing chat message","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:02:45.526Z"}
-{"estimatedTokens":574,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2294,"systemPromptCount":0,"timestamp":"2026-04-30T18:02:45.534Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:03:38.780Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:03:38.794Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T18:03:38.794Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:03:40.994Z"}
-{"level":"info","message":"Session updated atomically","messageCount":8,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:03:41.040Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:03:41.043Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:03:41.378Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":8,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:03:41.383Z"}
-{"level":"info","message":"Returning 8 messages to client","timestamp":"2026-04-30T18:03:41.383Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T18:07:45.902Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T18:07:45.915Z"}
-{"level":"info","message":"Processing chat message","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:07:55.781Z"}
-{"estimatedTokens":574,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2294,"systemPromptCount":0,"timestamp":"2026-04-30T18:07:55.800Z"}
-{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:08:02.138Z"}
-{"level":"info","message":"Session updated atomically","messageCount":10,"sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:08:02.155Z"}
-{"level":"info","message":"Session updated successfully:","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:08:02.158Z"}
-{"level":"warn","message":"SMTP credentials missing. Would have sent reset email to muhammadahmedasif13@gmail.com with link: http://localhost:3000/reset-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWQ3OThmMjU4OWRjYzU1ZTI0MmI1YmIiLCJpYXQiOjE3Nzc1NzI0OTQsImV4cCI6MTc3NzU3MzM5NH0._fz2-W7X2-FbRLRRqKUze4otpMcaAqN-veSPEdt6wlM","timestamp":"2026-04-30T18:08:14.990Z"}
-{"level":"warn","message":"SMTP credentials missing. Would have sent reset email to muhammadahmedasif13@gmail.com with link: http://localhost:3000/reset-password?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWQ3OThmMjU4OWRjYzU1ZTI0MmI1YmIiLCJpYXQiOjE3Nzc1NzI2NzksImV4cCI6MTc3NzU3MzU3OX0.Jh9eX7RNtHtfIjBEAV2wx47s4UIuVI29ta1_1a3RwlI","timestamp":"2026-04-30T18:11:19.528Z"}
-{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T18:13:51.827Z"}
-{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T18:13:51.830Z"}
-{"level":"info","message":"Password reset email sent to muhammadahmedasif13@gmail.com. Message ID: <af5c895b-c5b3-1931-e09f-e8d3f8e2f25c@gmail.com>","timestamp":"2026-04-30T18:14:15.624Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:15:05.757Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":10,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:15:05.763Z"}
-{"level":"info","message":"Returning 10 messages to client","timestamp":"2026-04-30T18:15:05.764Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:15:07.714Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:15:07.718Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T18:15:07.720Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T18:15:09.339Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":6,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T18:15:09.343Z"}
-{"level":"info","message":"Returning 6 messages to client","timestamp":"2026-04-30T18:15:09.343Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"140162a9-f6d8-4b27-ae0b-333ff3df1a91","timestamp":"2026-04-30T18:15:11.654Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":4,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"140162a9-f6d8-4b27-ae0b-333ff3df1a91","timestamp":"2026-04-30T18:15:11.660Z"}
-{"level":"info","message":"Returning 4 messages to client","timestamp":"2026-04-30T18:15:11.660Z"}
-{"level":"info","message":"Mood entry created for user 69d798f2589dcc55e242b5bb","timestamp":"2026-04-30T18:15:54.480Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:15:59.111Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":10,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:15:59.114Z"}
-{"level":"info","message":"Returning 10 messages to client","timestamp":"2026-04-30T18:15:59.115Z"}
-{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:16:01.723Z","userId":"69d798f2589dcc55e242b5bb"}
-{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:16:01.726Z"}
-{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T18:16:01.727Z"}
+{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T18:36:03.323Z"}
+{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T18:36:03.346Z"}
+{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T18:42:41.791Z"}
+{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T18:42:41.808Z"}
+{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T18:43:09.690Z"}
+{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T18:43:09.707Z"}
+{"level":"info","message":"Connected to MongoDB: localhost/Aurapulse","timestamp":"2026-04-30T18:47:35.972Z"}
+{"level":"info","message":"Server is running on port 3001","timestamp":"2026-04-30T18:47:35.985Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:48:28.314Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:48:28.326Z"}
+{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T18:48:28.331Z"}
+{"level":"info","message":"Attempting to delete chat session: 140162a9-f6d8-4b27-ae0b-333ff3df1a91","timestamp":"2026-04-30T18:48:37.712Z"}
+{"level":"info","message":"Successfully deleted chat session: 140162a9-f6d8-4b27-ae0b-333ff3df1a91","timestamp":"2026-04-30T18:48:37.732Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"e165d94d-486d-4fc8-aeff-de4a0c3059c6","timestamp":"2026-04-30T18:49:17.272Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":0,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"e165d94d-486d-4fc8-aeff-de4a0c3059c6","timestamp":"2026-04-30T18:49:17.278Z"}
+{"level":"info","message":"Returning 0 messages to client","timestamp":"2026-04-30T18:49:17.279Z"}
+{"level":"info","message":"Attempting to delete chat session: e165d94d-486d-4fc8-aeff-de4a0c3059c6","timestamp":"2026-04-30T18:49:19.916Z"}
+{"level":"info","message":"Successfully deleted chat session: e165d94d-486d-4fc8-aeff-de4a0c3059c6","timestamp":"2026-04-30T18:49:19.924Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:49:21.582Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":10,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:49:21.595Z"}
+{"level":"info","message":"Returning 10 messages to client","timestamp":"2026-04-30T18:49:21.596Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:49:26.336Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":2,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:49:26.345Z"}
+{"level":"info","message":"Returning 2 messages to client","timestamp":"2026-04-30T18:49:26.346Z"}
+{"level":"info","message":"Processing chat message","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:49:32.408Z"}
+{"estimatedTokens":559,"level":"info","memorySource":"history","message":"Prompt metrics","promptLengthChars":2234,"systemPromptCount":0,"timestamp":"2026-04-30T18:49:32.415Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:50:31.617Z"}
+{"level":"info","message":"Session updated atomically","messageCount":4,"sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:50:31.635Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:50:31.642Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:51:15.209Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":10,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T18:51:15.217Z"}
+{"level":"info","message":"Returning 10 messages to client","timestamp":"2026-04-30T18:51:15.218Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:51:25.092Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":4,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"510f003f-b6fb-4cd3-bceb-314dba6c32d3","timestamp":"2026-04-30T18:51:25.110Z"}
+{"level":"info","message":"Returning 4 messages to client","timestamp":"2026-04-30T18:51:25.110Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T18:51:26.610Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":6,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"a09de821-3c29-479e-820c-36ba614316b8","timestamp":"2026-04-30T18:51:26.621Z"}
+{"level":"info","message":"Returning 6 messages to client","timestamp":"2026-04-30T18:51:26.622Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:52:00.829Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":0,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:52:00.834Z"}
+{"level":"info","message":"Returning 0 messages to client","timestamp":"2026-04-30T18:52:00.836Z"}
+{"level":"info","message":"Processing chat message","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:52:14.273Z"}
+{"estimatedTokens":512,"level":"info","memorySource":"none","message":"Prompt metrics","promptLengthChars":2045,"systemPromptCount":0,"timestamp":"2026-04-30T18:52:14.281Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:53:09.619Z"}
+{"level":"info","message":"Session updated atomically","messageCount":2,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:53:09.628Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:53:09.635Z"}
+{"level":"info","message":"Processing chat message","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:53:20.358Z"}
+{"estimatedTokens":625,"level":"info","memorySource":"history","message":"Prompt metrics","promptLengthChars":2500,"systemPromptCount":0,"timestamp":"2026-04-30T18:53:20.364Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:54:31.706Z"}
+{"level":"info","message":"Session updated atomically","messageCount":4,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:54:31.716Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:54:31.719Z"}
+{"level":"info","message":"Processing chat message","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:55:27.863Z"}
+{"estimatedTokens":585,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2340,"systemPromptCount":0,"timestamp":"2026-04-30T18:55:27.870Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:56:34.670Z"}
+{"level":"info","message":"Session updated atomically","messageCount":6,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:56:34.681Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:56:34.682Z"}
+{"level":"info","message":"Processing chat message","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:56:45.433Z"}
+{"estimatedTokens":585,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2338,"systemPromptCount":0,"timestamp":"2026-04-30T18:56:45.443Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:08.992Z"}
+{"level":"info","message":"Session updated atomically","messageCount":8,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:09.006Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:09.007Z"}
+{"level":"info","message":"Processing chat message","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:13.431Z"}
+{"estimatedTokens":586,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2341,"systemPromptCount":0,"timestamp":"2026-04-30T18:57:13.440Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:39.686Z"}
+{"level":"info","message":"Session updated atomically","messageCount":10,"sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:39.696Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T18:57:39.700Z"}
+{"level":"info","message":"Attempting to delete chat session: cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T19:00:12.746Z"}
+{"level":"info","message":"Successfully deleted chat session: cbdc8d95-b797-42de-b246-5b5040446753","timestamp":"2026-04-30T19:00:12.754Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T19:00:14.738Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":10,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"92ef8b89-6592-4510-b070-bcdbf41bd4a1","timestamp":"2026-04-30T19:00:14.748Z"}
+{"level":"info","message":"Returning 10 messages to client","timestamp":"2026-04-30T19:00:14.750Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"a163802f-215c-417c-885f-d06b41b20aec","timestamp":"2026-04-30T19:00:17.916Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":0,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"a163802f-215c-417c-885f-d06b41b20aec","timestamp":"2026-04-30T19:00:17.920Z"}
+{"level":"info","message":"Returning 0 messages to client","timestamp":"2026-04-30T19:00:17.920Z"}
+{"level":"info","message":"Attempting to delete chat session: a163802f-215c-417c-885f-d06b41b20aec","timestamp":"2026-04-30T19:00:25.156Z"}
+{"level":"info","message":"Successfully deleted chat session: a163802f-215c-417c-885f-d06b41b20aec","timestamp":"2026-04-30T19:00:25.164Z"}
+{"level":"info","message":"Processing chat message","sessionId":"new","timestamp":"2026-04-30T19:00:35.377Z"}
+{"level":"warn","message":"Session not found:","sessionId":"new","timestamp":"2026-04-30T19:00:35.382Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:00:41.982Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":0,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:00:41.995Z"}
+{"level":"info","message":"Returning 0 messages to client","timestamp":"2026-04-30T19:00:41.996Z"}
+{"level":"info","message":"Processing chat message","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:00:46.141Z"}
+{"estimatedTokens":519,"level":"info","memorySource":"none","message":"Prompt metrics","promptLengthChars":2076,"systemPromptCount":0,"timestamp":"2026-04-30T19:00:46.147Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:01:37.862Z"}
+{"level":"info","message":"Session updated atomically","messageCount":2,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:01:37.873Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:01:37.876Z"}
+{"level":"info","message":"Processing chat message","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:01:39.509Z"}
+{"estimatedTokens":625,"level":"info","memorySource":"history","message":"Prompt metrics","promptLengthChars":2500,"systemPromptCount":0,"timestamp":"2026-04-30T19:01:39.513Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:02:46.261Z"}
+{"level":"info","message":"Session updated atomically","messageCount":4,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:02:46.270Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:02:46.274Z"}
+{"level":"info","message":"Processing chat message","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:03:06.550Z"}
+{"estimatedTokens":576,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2301,"systemPromptCount":0,"timestamp":"2026-04-30T19:03:06.556Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:00.282Z"}
+{"level":"info","message":"Session updated atomically","messageCount":6,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:00.294Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:00.296Z"}
+{"level":"info","message":"Processing chat message","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:05.929Z"}
+{"estimatedTokens":574,"level":"info","memorySource":"summary","message":"Prompt metrics","promptLengthChars":2294,"systemPromptCount":0,"timestamp":"2026-04-30T19:04:05.934Z"}
+{"level":"info","message":"Generated response successfully","riskLevel":0,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:29.071Z"}
+{"level":"info","message":"Session updated atomically","messageCount":8,"sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:29.078Z"}
+{"level":"info","message":"Session updated successfully:","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:04:29.080Z"}
+{"level":"info","message":"Fetching chat history","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:05:33.872Z","userId":"69d798f2589dcc55e242b5bb"}
+{"level":"info","message":"Session found","messagesCount":8,"ownerId":"69d798f2589dcc55e242b5bb","requestUserId":"69d798f2589dcc55e242b5bb","sessionId":"c106da95-5f61-4ba1-969f-66bfda0bef5f","timestamp":"2026-04-30T19:05:33.890Z"}
+{"level":"info","message":"Returning 8 messages to client","timestamp":"2026-04-30T19:05:33.891Z"}

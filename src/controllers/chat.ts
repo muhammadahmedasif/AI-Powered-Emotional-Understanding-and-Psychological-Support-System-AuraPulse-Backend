@@ -326,3 +326,26 @@ async function generateSessionTitle(userMsg: string, aiMsg: string): Promise<str
     return null;
   }
 }
+
+export const deleteChatSession = async (req: Request, res: Response) => {
+  try {
+    const { sessionId } = req.params;
+    const userId = req.user._id;
+
+    logger.info(`Attempting to delete chat session: ${sessionId}`);
+    
+    // Using findOneAndDelete to ensure we only delete if it belongs to the user
+    const deletedSession = await ChatSession.findOneAndDelete({ sessionId, userId });
+
+    if (!deletedSession) {
+      logger.warn(`Chat session not found or unauthorized for deletion: ${sessionId}`);
+      return res.status(404).json({ message: "Chat session not found or unauthorized" });
+    }
+
+    logger.info(`Successfully deleted chat session: ${sessionId}`);
+    res.json({ message: "Chat session deleted successfully" });
+  } catch (error) {
+    logger.error("Failed to delete chat session:", error);
+    res.status(500).json({ message: "Failed to delete chat session" });
+  }
+};

@@ -5,6 +5,7 @@ import {
   sendMessage,
   getChatHistory,
   getUserSessions,
+  deleteChatSession,
 } from "../controllers/chat";
 import { auth } from "../middleware/auth";
 
@@ -21,6 +22,9 @@ router.post("/sessions", createChatSession);
 
 // Get a specific chat session
 router.get("/sessions/:sessionId", getChatSession);
+
+// Delete a specific chat session
+router.delete("/sessions/:sessionId", deleteChatSession);
 
 // Send a message in a chat session
 router.post("/sessions/:sessionId/messages", sendMessage);
