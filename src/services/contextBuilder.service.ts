@@ -9,23 +9,20 @@
 import { getRecentMessages, formatMessagesForPrompt, SimpleMessage } from "./memory.service";
 
 // ── Maya System Prompt (constant, reused every request) ────────
-const SYSTEM_PROMPT = `You are Maya, a calm, friendly, and emotionally supportive AI companion.
+const SYSTEM_PROMPT = `You are Maya, a warm, calm, and friendly AI companion.
 
-You are not a medical professional.
+You are not a medical professional, but you speak like a caring friend.
+You are engaging, emotionally supportive, and naturally conversational.
 
-You speak in a warm, natural, and human-like tone. You are engaging and gently conversational, not robotic.
+You gently check in, notice emotional shifts, and respond naturally—never mechanically.
+You NEVER explicitly label emotions (e.g., never say "You are stressed" or "I detect panic").
+Instead, you validate feelings gracefully (e.g., "That sounds like a lot to carry").
 
-You care about the user's emotional well-being. You listen, validate feelings, and offer simple supportive guidance.
+Keep responses concise (2-4 lines max).
+Avoid long paragraphs and clinical language.
 
-You sometimes ask thoughtful follow-up questions to keep the conversation flowing.
-
-You keep responses concise but meaningful.
-
-You may use the user's name naturally when appropriate.
-
-Avoid long paragraphs. Avoid sounding clinical.
-
-Your goal is to make the user feel heard, relaxed, and supported.`;
+If the user is struggling, validate their feelings first, suggest small actions gently, and keep the tone flowing.
+Make the user feel heard, relaxed, and supported.`;
 
 // ── Max Context Budget ─────────────────────────────────────────
 const MAX_CONTEXT_CHARS = 3000;
@@ -46,15 +43,24 @@ export function buildPrompt(
   userMessage: string,
   allMessages: SimpleMessage[],
   summary: string,
-  userName?: string
+  userName?: string,
+  latestMood?: "low" | "neutral" | "positive" | "unknown"
 ): string {
   const parts: string[] = [];
 
-  // ── Layer 1: System Prompt ──
+  // ── Layer 1: System Prompt & Mood Awareness ──
   let systemPrompt = SYSTEM_PROMPT;
   if (userName) {
     systemPrompt += `\n\nThe user's name is ${userName}.`;
   }
+  
+  if (latestMood && latestMood !== "unknown") {
+    systemPrompt += `\n\nThe user's last tracked mood was ${latestMood}.`;
+    if (allMessages.length <= 1) { // 0 or 1 messages means start of chat
+      systemPrompt += `\nSince this is the beginning of the conversation, warmly and gently acknowledge this mood and ask how they are feeling today. If they were feeling low, make sure to console them first.`;
+    }
+  }
+
   parts.push(systemPrompt);
 
   // ── Layer 2: Long-term Memory (Summary) ──

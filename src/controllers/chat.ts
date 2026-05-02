@@ -11,6 +11,8 @@ import {
   generateTitle,
 } from "../services/summarizer.service";
 import { MessageAnalysis } from "../types";
+import { Mood } from "../models/Mood";
+import { analyzeUserState } from "../services/emotionAI.service";
 
 // ── Default Analysis (until real analysis is implemented) ──────
 const defaultAnalysis: MessageAnalysis = {
@@ -72,7 +74,7 @@ export const sendMessage = async (req: Request, res: Response) => {
     console.log("RECEIVED MESSAGE:", req.body.message);
     logger.info("Processing chat message", { sessionId });
 
-    // ── Load session ──
+    // ── Load session & mood ──
     const session = await ChatSession.findOne({ sessionId });
     if (!session) {
       logger.warn("Session not found:", { sessionId });
@@ -90,7 +92,26 @@ export const sendMessage = async (req: Request, res: Response) => {
       content: m.content,
     }));
     const summary = session.summary || "";
-    const prompt = buildPrompt(message, allMessages, summary, userName);
+
+    // ── Start Parallel Emotion Analysis ──
+    const latestMoodDoc = await Mood.findOne({ userId }).sort({ timestamp: -1 });
+    let latestMood: "low" | "neutral" | "positive" | "unknown" = "unknown";
+    if (latestMoodDoc) {
+      if (latestMoodDoc.score <= 40) latestMood = "low";
+      else if (latestMoodDoc.score >= 70) latestMood = "positive";
+      else latestMood = "neutral";
+    }
+
+    const prompt = buildPrompt(message, allMessages, summary, userName, latestMood);
+
+    // Non-blocking promise
+    const recentContext = allMessages.slice(-3).map(m => m.content).join(" | ");
+    const emotionPromise = analyzeUserState({
+      userMessage: message,
+      recentMessages: recentContext,
+      sessionSummary: summary,
+      latestMood
+    });
 
     // ── Abort on client disconnect ──
     const abortController = new AbortController();
@@ -124,6 +145,10 @@ export const sendMessage = async (req: Request, res: Response) => {
       replyLength: reply.length,
     });
 
+    // ── Await Emotion Analysis ──
+    // This is safe because it's fast and we are already done streaming text.
+    const emotionMeta = await emotionPromise;
+
     // ── Save messages atomically ──
     const updatedSession = await ChatSession.findOneAndUpdate(
       { sessionId, userId },
@@ -146,6 +171,7 @@ export const sendMessage = async (req: Request, res: Response) => {
                     emotionalState: defaultAnalysis.emotionalState,
                     riskLevel: defaultAnalysis.riskLevel,
                   },
+                  emotionMeta,
                 },
               },
             ],
@@ -208,6 +234,7 @@ export const sendMessage = async (req: Request, res: Response) => {
             emotionalState: defaultAnalysis.emotionalState,
             riskLevel: defaultAnalysis.riskLevel,
           },
+          emotionMeta,
         },
       }) + "\n"
     );
