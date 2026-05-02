@@ -69,6 +69,7 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Message is required" });
     }
 
+    console.log("RECEIVED MESSAGE:", req.body.message);
     logger.info("Processing chat message", { sessionId });
 
     // ── Load session ──
