@@ -3,16 +3,16 @@ import { ChatSession } from "../models/ChatSession";
 import { randomUUID } from "crypto";
 import { logger } from "../utils/logger";
 import { Types } from "mongoose";
-import { generateResponse } from "../services/ai";
-import { 
-  generateAIResponseStream, 
-  buildRecentContext 
-} from "../services/prompt.service";
+import { buildPrompt } from "../services/contextBuilder.service";
+import { routedGenerateStream } from "../services/aiRouter.service";
+import {
+  shouldUpdateSummary,
+  updateSummary,
+  generateTitle,
+} from "../services/summarizer.service";
 import { MessageAnalysis } from "../types";
 
-
-const MEMORY_UPDATE_INTERVAL = 10;
-
+// ── Default Analysis (until real analysis is implemented) ──────
 const defaultAnalysis: MessageAnalysis = {
   emotionalState: "neutral",
   themes: [],
@@ -21,40 +21,9 @@ const defaultAnalysis: MessageAnalysis = {
   progressIndicators: [],
 };
 
-async function updateSessionSummary(session: any) {
-  const messages = session.messages.map((item: any) => ({
-    role: item.role,
-    content: item.content,
-  }));
-
-  const olderMessages = messages.slice(0, -2);
-  const shouldUpdate =
-    olderMessages.length > 0 &&
-    (!session.summary || messages.length % MEMORY_UPDATE_INTERVAL === 0);
-
-  if (!shouldUpdate) {
-    return;
-  }
-
-  const history = buildRecentContext(olderMessages, 20);
-  const prompt = `Summarize this mental health chat memory in 2-4 sentences. Focus on durable context (goals, concerns, safety).
-Existing: ${session.summary || "None"}
-New: ${history}`;
-
-  try {
-    session.summary = await generateResponse(prompt, { num_predict: 100, temperature: 0.3 });
-    await session.save();
-  } catch (error) {
-    logger.warn("Could not update chat summary", {
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
-}
-
-// Create a new chat session
+// ── Create Chat Session ────────────────────────────────────────
 export const createChatSession = async (req: Request, res: Response) => {
   try {
-    // Check if user is authenticated
     if (!req.user || !req.user._id) {
       return res
         .status(401)
@@ -62,7 +31,6 @@ export const createChatSession = async (req: Request, res: Response) => {
     }
 
     const userId = req.user._id;
-
     const sessionId = randomUUID();
 
     const session = new ChatSession({
@@ -89,12 +57,13 @@ export const createChatSession = async (req: Request, res: Response) => {
   }
 };
 
-// Send a message in the chat session
+// ── Send Message (CORE — refactored) ───────────────────────────
 export const sendMessage = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
     const { message } = req.body;
     const userId = req.user._id;
+    const userName = req.user.name;
 
     if (!message || typeof message !== "string") {
       return res.status(400).json({ message: "Message is required" });
@@ -102,7 +71,7 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     logger.info("Processing chat message", { sessionId });
 
-    // Find session by sessionId
+    // ── Load session ──
     const session = await ChatSession.findOne({ sessionId });
     if (!session) {
       logger.warn("Session not found:", { sessionId });
@@ -114,15 +83,15 @@ export const sendMessage = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
-    const recentMessagesString = buildRecentContext(
-      session.messages.map((item) => ({
-        role: item.role,
-        content: item.content,
-      }))
-    );
+    // ── Build context with HYBRID memory ──
+    const allMessages = session.messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
     const summary = session.summary || "";
+    const prompt = buildPrompt(message, allMessages, summary, userName);
 
-    // Abort controller to stop AI generation if client disconnects
+    // ── Abort on client disconnect ──
     const abortController = new AbortController();
     req.on("close", () => {
       if (!res.writableEnded) {
@@ -131,87 +100,118 @@ export const sendMessage = async (req: Request, res: Response) => {
       }
     });
 
-    // Single AI call for response, streaming text as it arrives
-    const { reply, analysis } = await generateAIResponseStream(
-      message,
-      recentMessagesString,
-      summary,
+    // ── Generate AI response via router (Gemini → Ollama) ──
+    const { fullText, modelUsed, fallbackUsed } = await routedGenerateStream(
+      prompt,
       (chunk) => {
         res.write(JSON.stringify({ t: "chunk", d: chunk }) + "\n");
+      },
+      {
+        geminiMaxTokens: 200,
+        ollamaMaxTokens: 150,
+        temperature: 0.7,
       },
       abortController.signal
     );
 
+    const reply = fullText.trim();
+
     logger.info("Generated response successfully", {
       sessionId,
-      riskLevel: analysis.riskLevel,
+      modelUsed,
+      fallbackUsed,
+      replyLength: reply.length,
     });
 
-    // Use atomic update to push both messages at once
+    // ── Save messages atomically ──
     const updatedSession = await ChatSession.findOneAndUpdate(
       { sessionId, userId },
-      { 
-        $push: { 
-          messages: { 
+      {
+        $push: {
+          messages: {
             $each: [
               {
                 role: "user",
                 content: message,
-                timestamp: new Date()
+                timestamp: new Date(),
               },
               {
                 role: "assistant",
                 content: reply,
                 timestamp: new Date(),
                 metadata: {
-                  analysis,
+                  analysis: defaultAnalysis,
                   progress: {
-                    emotionalState: analysis.emotionalState,
-                    riskLevel: analysis.riskLevel,
+                    emotionalState: defaultAnalysis.emotionalState,
+                    riskLevel: defaultAnalysis.riskLevel,
                   },
                 },
-              }
-            ] 
-          } 
-        }
+              },
+            ],
+          },
+        },
       },
       { new: true }
     );
 
     if (updatedSession) {
-      logger.info("Session updated atomically", { 
-        sessionId, 
-        messageCount: updatedSession.messages.length 
+      logger.info("Session updated atomically", {
+        sessionId,
+        messageCount: updatedSession.messages.length,
       });
 
-      // Update title if it's still the default
-      if (updatedSession.messages.length >= 2 && (updatedSession.title === "New Session" || updatedSession.title === "New Therapy Session")) {
-        generateSessionTitle(message, reply).then(title => {
-          if (title && title.length > 3) {
-            ChatSession.updateOne({ sessionId }, { title }).catch(err => logger.error("Title update error", err));
-          }
-        }).catch(err => logger.error("Title generation error", err));
+      // ── Background: Title Generation (Ollama only) ──
+      const isDefaultTitle =
+        updatedSession.title === "New Session" ||
+        updatedSession.title === "New Therapy Session";
+
+      if (updatedSession.messages.length >= 2 && isDefaultTitle) {
+        generateTitle(message, reply)
+          .then((title) => {
+            if (title && title.length > 2) {
+              ChatSession.updateOne({ sessionId }, { $set: { title } }).catch(
+                (err) => logger.error("Title update error", err)
+              );
+            }
+          })
+          .catch((err) => logger.error("Title generation error", err));
       }
 
-      // Update summary in background
-      updateSessionSummary(updatedSession).catch((err) =>
-        logger.warn("Background summary update failed", { error: String(err) })
-      );
+      // ── Background: Summary Update (Ollama only) ──
+      const msgCount = updatedSession.messages.length;
+      const hasSummary = !!updatedSession.summary;
+
+      if (shouldUpdateSummary(msgCount, hasSummary)) {
+        const msgs = updatedSession.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+        updateSummary(sessionId, msgs, updatedSession.summary || "").catch(
+          (err) =>
+            logger.warn("Background summary update failed", {
+              error: String(err),
+            })
+        );
+      }
     }
 
-    // Send final completion message with metadata
-    res.write(JSON.stringify({
-      t: "done",
-      analysis,
-      metadata: {
-        progress: {
-          emotionalState: analysis.emotionalState,
-          riskLevel: analysis.riskLevel,
-        }
-      }
-    }) + "\n");
+    // ── Send final completion event ──
+    res.write(
+      JSON.stringify({
+        t: "done",
+        analysis: defaultAnalysis,
+        modelUsed,
+        fallbackUsed,
+        metadata: {
+          progress: {
+            emotionalState: defaultAnalysis.emotionalState,
+            riskLevel: defaultAnalysis.riskLevel,
+          },
+        },
+      }) + "\n"
+    );
     res.end();
-    logger.info("Session updated successfully:", { sessionId });
+    logger.info("Response stream completed", { sessionId });
   } catch (error) {
     logger.error("Error in sendMessage:", error);
     if (!res.headersSent) {
@@ -220,6 +220,7 @@ export const sendMessage = async (req: Request, res: Response) => {
   }
 };
 
+// ── Get Chat Session ───────────────────────────────────────────
 export const getChatSession = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
@@ -240,37 +241,41 @@ export const getChatSession = async (req: Request, res: Response) => {
   }
 };
 
+// ── Get Chat History ───────────────────────────────────────────
 export const getChatHistory = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
     const userId = req.user._id;
-    logger.info(`Fetching chat history`, { sessionId, userId: userId.toString() });
-    
+    logger.info(`Fetching chat history`, {
+      sessionId,
+      userId: userId.toString(),
+    });
+
     // 1. Try finding by UUID
     let session = await ChatSession.findOne({ sessionId });
-    
+
     // 2. Fallback to _id if not found and sessionId looks like an ObjectId
     if (!session && Types.ObjectId.isValid(sessionId)) {
       session = await ChatSession.findById(sessionId);
     }
-    
+
     if (!session) {
       logger.warn(`Session not found in DB with either ID type`, { sessionId });
       return res.status(404).json({ message: "Session not found" });
     }
 
-    logger.info(`Session found`, { 
-      sessionId: session.sessionId, 
+    logger.info(`Session found`, {
+      sessionId: session.sessionId,
       ownerId: session.userId.toString(),
       requestUserId: userId.toString(),
-      messagesCount: session.messages.length 
+      messagesCount: session.messages.length,
     });
 
     if (session.userId.toString() !== userId.toString()) {
       logger.warn(`Ownership mismatch`, {
         sessionId,
         ownerId: session.userId.toString(),
-        requestUserId: userId.toString()
+        requestUserId: userId.toString(),
       });
       return res.status(403).json({ message: "Unauthorized" });
     }
@@ -283,6 +288,7 @@ export const getChatHistory = async (req: Request, res: Response) => {
   }
 };
 
+// ── Get User Sessions ──────────────────────────────────────────
 export const getUserSessions = async (req: Request, res: Response) => {
   try {
     const userId = req.user._id;
@@ -291,19 +297,22 @@ export const getUserSessions = async (req: Request, res: Response) => {
       .sort({ startTime: -1 });
 
     const sessionsWithPreview = sessions.map((session) => {
-      const lastMessage = session.messages.length > 0 
-        ? session.messages[session.messages.length - 1] 
-        : null;
+      const lastMessage =
+        session.messages.length > 0
+          ? session.messages[session.messages.length - 1]
+          : null;
       return {
         sessionId: session.sessionId,
         title: session.title,
         startTime: session.startTime,
         status: session.status,
-        lastMessage: lastMessage ? {
-          content: lastMessage.content,
-          timestamp: lastMessage.timestamp
-        } : null,
-        messageCount: session.messages.length
+        lastMessage: lastMessage
+          ? {
+              content: lastMessage.content,
+              timestamp: lastMessage.timestamp,
+            }
+          : null,
+        messageCount: session.messages.length,
       };
     });
     res.json(sessionsWithPreview);
@@ -313,33 +322,27 @@ export const getUserSessions = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Generate a concise title for the session based on the first exchange.
- * Uses the existing Ollama service for consistency.
- */
-async function generateSessionTitle(userMsg: string, aiMsg: string): Promise<string | null> {
-  try {
-    const prompt = `Generate a 2-4 word title for this therapy session based on the exchange.\nUser: ${userMsg.slice(0, 100)}\nAI: ${aiMsg.slice(0, 100)}\nTitle:`;
-    const title = await generateResponse(prompt, { num_predict: 10, temperature: 0.3 });
-    return title.replace(/^["']|["']$/g, "").trim() || null;
-  } catch {
-    return null;
-  }
-}
-
+// ── Delete Chat Session ────────────────────────────────────────
 export const deleteChatSession = async (req: Request, res: Response) => {
   try {
     const { sessionId } = req.params;
     const userId = req.user._id;
 
     logger.info(`Attempting to delete chat session: ${sessionId}`);
-    
+
     // Using findOneAndDelete to ensure we only delete if it belongs to the user
-    const deletedSession = await ChatSession.findOneAndDelete({ sessionId, userId });
+    const deletedSession = await ChatSession.findOneAndDelete({
+      sessionId,
+      userId,
+    });
 
     if (!deletedSession) {
-      logger.warn(`Chat session not found or unauthorized for deletion: ${sessionId}`);
-      return res.status(404).json({ message: "Chat session not found or unauthorized" });
+      logger.warn(
+        `Chat session not found or unauthorized for deletion: ${sessionId}`
+      );
+      return res
+        .status(404)
+        .json({ message: "Chat session not found or unauthorized" });
     }
 
     logger.info(`Successfully deleted chat session: ${sessionId}`);
