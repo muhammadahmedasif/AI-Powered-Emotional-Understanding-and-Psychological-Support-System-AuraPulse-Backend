@@ -67,6 +67,12 @@ export const sendMessage = async (req: Request, res: Response) => {
     const userId = req.user._id;
     const userName = req.user.name;
 
+    // ── Instant Response Headers ──
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering
+
     if (!message || typeof message !== "string") {
       return res.status(400).json({ message: "Message is required" });
     }
@@ -104,13 +110,16 @@ export const sendMessage = async (req: Request, res: Response) => {
 
     const prompt = buildPrompt(message, allMessages, summary, userName, latestMood);
 
-    // Non-blocking promise
+    // ── Start Parallel Emotion Analysis (Non-blocking) ──
     const recentContext = allMessages.slice(-3).map(m => m.content).join(" | ");
     const emotionPromise = analyzeUserState({
       userMessage: message,
       recentMessages: recentContext,
       sessionSummary: summary,
       latestMood
+    }).catch(err => {
+      logger.warn("Emotion analysis failed in background", err);
+      return null;
     });
 
     // ── Abort on client disconnect ──
@@ -122,15 +131,18 @@ export const sendMessage = async (req: Request, res: Response) => {
       }
     });
 
-    // ── Generate AI response via router (Gemini → Ollama) ──
+    // ── Generate AI response via router ──
+    // This starts streaming immediately to res
     const { fullText, modelUsed, fallbackUsed } = await routedGenerateStream(
       prompt,
       (chunk) => {
-        res.write(JSON.stringify({ t: "chunk", d: chunk }) + "\n");
+        if (!res.writableEnded) {
+          res.write(JSON.stringify({ t: "chunk", d: chunk }) + "\n");
+        }
       },
       {
-        geminiMaxTokens: 200,
-        ollamaMaxTokens: 150,
+        geminiMaxTokens: 250,
+        ollamaMaxTokens: 200,
         temperature: 0.7,
       },
       abortController.signal

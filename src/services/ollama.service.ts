@@ -4,7 +4,7 @@ import { logger } from "../utils/logger";
 const OLLAMA_URL =
   process.env.OLLAMA_URL || "http://localhost:11434/api/generate";
 const MODEL = process.env.OLLAMA_MODEL || "llama3";
-const TIMEOUT_MS = 60_000; // 60 seconds — local model is slower
+const TIMEOUT_MS = 300_000; // 5 minutes — local model queues concurrent requests so it needs a longer timeout
 
 // ── Types ──────────────────────────────────────────────────────
 interface OllamaChunk {

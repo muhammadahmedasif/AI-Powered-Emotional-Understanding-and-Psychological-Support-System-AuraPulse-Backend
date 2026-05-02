@@ -132,9 +132,13 @@ Mood: "${params.latestMood}"`;
     });
 
     try {
-      const ollamaText = await ollamaGenerate(prompt, {
-        temperature: 0.1,
-      });
+      // Use a strict 3-second timeout for the Ollama fallback too
+      const ollamaText = await Promise.race([
+        ollamaGenerate(prompt, { temperature: 0.1 }),
+        new Promise<string>((_, reject) => 
+          setTimeout(() => reject(new Error("Ollama timeout")), 3000)
+        )
+      ]);
 
       // Extract JSON in case Ollama wraps it in markdown blocks
       const jsonMatch = ollamaText.match(/\{[\s\S]*\}/);
