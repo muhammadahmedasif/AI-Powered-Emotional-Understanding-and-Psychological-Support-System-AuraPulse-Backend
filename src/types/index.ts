@@ -6,6 +6,10 @@ export interface AuthUser {
   _id: Types.ObjectId;
   email?: string;
   name?: string;
+  profileImage?: string;
+  aiName: string;
+  aiBehavior: string;
+  aiAvatar: string;
 }
 
 export interface MessageAnalysis {

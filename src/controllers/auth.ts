@@ -28,6 +28,7 @@ export const register = async (req: Request, res: Response) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        profileImage: user.profileImage || "",
       },
       message: "User registered successfully.",
     });
@@ -74,6 +75,7 @@ export const login = async (req: Request, res: Response) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        profileImage: user.profileImage || "",
       },
       token,
       message: "Login successful",

@@ -108,7 +108,10 @@ export const sendMessage = async (req: Request, res: Response) => {
       else latestMood = "neutral";
     }
 
-    const prompt = buildPrompt(message, allMessages, summary, userName, latestMood);
+    const aiName = req.user.aiName || "Maya";
+    const aiBehavior = req.user.aiBehavior || "supportive";
+
+    const prompt = buildPrompt(message, allMessages, summary, userName, latestMood, aiName, aiBehavior);
 
     // ── Start Parallel Emotion Analysis (Non-blocking) ──
     const recentContext = allMessages.slice(-3).map(m => m.content).join(" | ");
@@ -141,7 +144,7 @@ export const sendMessage = async (req: Request, res: Response) => {
         }
       },
       {
-        geminiMaxTokens: 250,
+        primaryMaxTokens: 250,
         ollamaMaxTokens: 200,
         temperature: 0.7,
       },

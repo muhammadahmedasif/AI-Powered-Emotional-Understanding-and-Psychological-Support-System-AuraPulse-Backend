@@ -8,21 +8,37 @@
 
 import { getRecentMessages, formatMessagesForPrompt, SimpleMessage } from "./memory.service";
 
-// ── Maya System Prompt (constant, reused every request) ────────
-const SYSTEM_PROMPT = `You are Maya, a warm, calm, and friendly AI companion.
+// ── Behavior Mapping (The precise personality descriptions) ────────
+const BEHAVIOR_MAP = {
+  supportive: "empathetic, warm, and understanding",
+  friendly: "casual, light-hearted, and conversational",
+  motivational: "encouraging, energetic, and uplifting",
+  calm: "slow, grounding, and therapist-like"
+};
+
+// ── Build Base System Prompt ────────────────────────────────────
+function getBaseSystemPrompt(aiName: string = "Maya", aiBehavior: string = "supportive"): string {
+  const behaviorDescription = BEHAVIOR_MAP[aiBehavior as keyof typeof BEHAVIOR_MAP] || BEHAVIOR_MAP.supportive;
+  
+  return `You are ${aiName}, a ${behaviorDescription} AI companion helping users manage emotions and mental well-being.
 
 You are not a medical professional, but you speak like a caring friend.
 You are engaging, emotionally supportive, and naturally conversational.
 
-You gently check in, notice emotional shifts, and respond naturally—never mechanically.
+Respond in a natural conversational tone. Keep responses moderately detailed (3–6 sentences).
+Avoid being too short or overly long. Provide slight explanation or reflection when appropriate, but stay concise and supportive.
+
+When the user expresses emotion (stress, anxiety, sadness), respond with:
+- A warm acknowledgment
+- A brief reflection of their feeling
+- One small supportive suggestion or a gentle question
+
 You NEVER explicitly label emotions (e.g., never say "You are stressed" or "I detect panic").
 Instead, you validate feelings gracefully (e.g., "That sounds like a lot to carry").
 
-Keep responses concise (2-4 lines max).
 Avoid long paragraphs and clinical language.
-
-If the user is struggling, validate their feelings first, suggest small actions gently, and keep the tone flowing.
 Make the user feel heard, relaxed, and supported.`;
+}
 
 // ── Max Context Budget ─────────────────────────────────────────
 const MAX_CONTEXT_CHARS = 3000;
@@ -44,12 +60,14 @@ export function buildPrompt(
   allMessages: SimpleMessage[],
   summary: string,
   userName?: string,
-  latestMood?: "low" | "neutral" | "positive" | "unknown"
+  latestMood?: "low" | "neutral" | "positive" | "unknown",
+  aiName: string = "Maya",
+  aiBehavior: string = "supportive"
 ): string {
   const parts: string[] = [];
 
   // ── Layer 1: System Prompt & Mood Awareness ──
-  let systemPrompt = SYSTEM_PROMPT;
+  let systemPrompt = getBaseSystemPrompt(aiName, aiBehavior);
   if (userName) {
     systemPrompt += `\n\nThe user's name is ${userName}.`;
   }
@@ -71,12 +89,12 @@ export function buildPrompt(
   // ── Layer 3: Short-term Memory (Recent Messages) ──
   const recent = getRecentMessages(allMessages);
   if (recent.length > 0) {
-    const formatted = formatMessagesForPrompt(recent);
+    const formatted = formatMessagesForPrompt(recent, aiName);
     parts.push(`[Recent Conversation]\n${formatted}`);
   }
 
   // ── Layer 4: Current User Message ──
-  parts.push(`User: ${userMessage}\nMaya:`);
+  parts.push(`User: ${userMessage}\n${aiName}:`);
 
   // ── Assemble ──
   let prompt = parts.join("\n\n");
@@ -87,7 +105,7 @@ export function buildPrompt(
   if (prompt.length > MAX_CONTEXT_CHARS) {
     // Rebuild with a shorter recent context
     const shorterRecent = getRecentMessages(allMessages, 6);
-    const formatted = formatMessagesForPrompt(shorterRecent);
+    const formatted = formatMessagesForPrompt(shorterRecent, aiName);
 
     const rebuiltParts: string[] = [systemPrompt];
     // Include summary only if there's room
@@ -95,7 +113,7 @@ export function buildPrompt(
       rebuiltParts.push(`[Summary]\n${summary.trim().slice(0, 300)}`);
     }
     rebuiltParts.push(`[Recent]\n${formatted}`);
-    rebuiltParts.push(`User: ${userMessage}\nMaya:`);
+    rebuiltParts.push(`User: ${userMessage}\n${aiName}:`);
     prompt = rebuiltParts.join("\n\n");
   }
 
@@ -105,6 +123,6 @@ export function buildPrompt(
 /**
  * Returns the system prompt constant for external use (e.g. logging).
  */
-export function getSystemPrompt(): string {
-  return SYSTEM_PROMPT;
+export function getSystemPrompt(aiName: string = "Maya", aiBehavior: string = "supportive"): string {
+  return getBaseSystemPrompt(aiName, aiBehavior);
 }

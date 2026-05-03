@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import "./types";
-import express from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -13,10 +13,11 @@ import authRouter from "./routes/auth";
 import chatRouter from "./routes/chat";
 import moodRouter from "./routes/mood";
 import activityRouter from "./routes/activity";
+import userRouter from "./routes/user";
 import { connectDB } from "./utils/db";
 
 // Create Express app
-const app = express();
+const app: any = express();
 
 // Middleware
 app.use(helmet()); // Security headers
@@ -25,7 +26,7 @@ app.use(express.json()); // Parse JSON bodies
 app.use(morgan("dev")); // HTTP request logger
 
 // Routes
-app.get("/health", (req, res) => {
+app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", message: "Server is running" });
 });
 
@@ -34,12 +35,14 @@ app.use("/api/auth", authRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/mood", moodRouter);
 app.use("/api/activity", activityRouter);
+app.use("/api/user", userRouter);
 
-// Backward compatibility for existing frontend clients
+// Backward compatibility
 app.use("/auth", authRouter);
 app.use("/chat", chatRouter);
 app.use("/mood", moodRouter);
 app.use("/activity", activityRouter);
+app.use("/user", userRouter);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -47,10 +50,7 @@ app.use(errorHandler);
 // Start server
 const startServer = async () => {
   try {
-    // Connect to MongoDB first
     await connectDB();
-
-    // Then start the server
     const PORT = process.env.PORT || 3001;
     app.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);

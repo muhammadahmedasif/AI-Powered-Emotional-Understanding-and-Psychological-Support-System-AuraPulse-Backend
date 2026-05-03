@@ -6,7 +6,7 @@
  */
 
 // ── Constants ──────────────────────────────────────────────────
-const MAX_RECENT_MESSAGES = 10; // 5 user + 5 assistant turns
+const MAX_RECENT_MESSAGES = 8; // 4 user + 4 assistant turns
 const MAX_MESSAGE_LENGTH = 400; // truncate individual messages
 
 // ── Types ──────────────────────────────────────────────────────
@@ -39,10 +39,10 @@ export function getRecentMessages(
  * Converts an array of messages into a formatted string
  * suitable for injection into the prompt.
  */
-export function formatMessagesForPrompt(messages: SimpleMessage[]): string {
+export function formatMessagesForPrompt(messages: SimpleMessage[], aiName: string = "Maya"): string {
   return messages
     .map((msg) => {
-      const role = msg.role === "user" ? "User" : "Maya";
+      const role = msg.role === "user" ? "User" : aiName;
       return `${role}: ${msg.content}`;
     })
     .join("\n");

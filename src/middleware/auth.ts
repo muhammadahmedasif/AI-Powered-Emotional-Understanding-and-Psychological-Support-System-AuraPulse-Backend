@@ -29,6 +29,10 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
       _id: user._id as any,
       email: user.email,
       name: user.name,
+      profileImage: user.profileImage,
+      aiName: user.aiName,
+      aiBehavior: user.aiBehavior,
+      aiAvatar: user.aiAvatar,
     };
     next();
   } catch (error) {
